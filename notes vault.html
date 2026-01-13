@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core-X | Sanchit Kosh</title>
+    <link rel="icon" href="logo.png" type="image/png">
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #f3f4f6;
+            --card: rgba(255, 255, 255, 0.9);
+            --side: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --pri: #6366f1;
+            --pri-light: #e0e7ff;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --side: #1e293b;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app { display: flex; height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--side);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--pri);
+            margin-bottom: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .logo:hover i { transform: rotate(15deg) scale(1.1); }
+
+        .nav { list-style: none; }
+        .nav li {
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            margin-bottom: 8px;
+        }
+
+        .nav li:hover { background: var(--pri-light); color: var(--pri); }
+        .nav li.active { background: var(--pri); color: #fff; }
+
+        .sync {
+            margin-top: auto;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+        }
+
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .on { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .off { background: var(--danger); }
+
+        .actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .icon-btn {
+            height: 48px; border-radius: 14px; border: 1px solid var(--border);
+            background: var(--side); color: var(--text); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .icon-btn:hover { border-color: var(--pri); color: var(--pri); background: var(--pri-light); }
+
+        /* Main Content */
+        .content { flex: 1; padding: 2.5rem; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        
+        .breadcrumb-container { display: flex; align-items: center; gap: 10px; }
+        .breadcrumb { font-size: 1.5rem; font-weight: 800; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+
+        .card {
+            background: var(--card); backdrop-filter: blur(10px); padding: 1.75rem;
+            border-radius: 24px; border: 1px solid var(--border); cursor: pointer;
+            position: relative; box-shadow: var(--shadow);
+        }
+        .card:hover { transform: translateY(-5px); border-color: var(--pri); }
+        .folder { border-left: 6px solid var(--warn); }
+        .note { border-top: 4px solid var(--pri); }
+
+        .card-actions {
+            position: absolute; top: 1rem; right: 1rem; display: flex; gap: 8px;
+        }
+
+        .mini-btn { color: var(--muted); cursor: pointer; }
+        .mini-btn:hover { color: var(--pri); }
+        .mini-btn.active { color: var(--warn); fill: var(--warn); }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px); align-items: center; justify-content: center; z-index: 100;
+        }
+        .modal-box {
+            background: var(--side); padding: 2.5rem; border-radius: 32px;
+            width: 100%; max-width: 550px; border: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 12px 20px; border-radius: 14px; border: none; font-weight: 700;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .primary { background: var(--pri); color: #fff; }
+
+        input, textarea {
+            width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); margin-top: 10px; outline: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="logo" onclick="setView('all')" title="Return to Home View">
+                <i data-lucide="layers"></i> Core-X<span>.Vault</span>
+            </div>
+
+            <ul class="nav">
+                <li id="nav-all" class="active" onclick="setView('all')" title="View all your notes and folders">
+                    <i data-lucide="layers"></i> All Notes
+                </li>
+                <li id="nav-fav" onclick="setView('fav')" title="View your starred items">
+                    <i data-lucide="star"></i> Favorites
+                </li>
+                <li id="nav-arc" onclick="setView('arc')" title="View deleted or archived items">
+                    <i data-lucide="archive"></i> Archive
+                </li>
+            </ul>
+
+            <div class="sync">
+                <div style="font-size:.85rem; font-weight:700; margin-bottom: 10px;">
+                    <span id="dot" class="dot off"></span>
+                    <span id="status">Vault: Disconnected</span>
+                </div>
+                <button id="connectBtn" class="btn primary" style="width:100%" title="Sync with a folder on your computer">Connect PC Folder</button>
+            </div>
+
+            <div class="actions">
+                <button id="themeToggle" class="icon-btn" title="Switch Light/Dark Mode">
+                    <i data-lucide="moon"></i>
+                </button>
+                <button onclick="exportJSON()" class="icon-btn" title="Export Vault as JSON Backup">
+                    <i data-lucide="download"></i>
+                </button>
+                <button onclick="document.getElementById('import').click()" class="icon-btn" title="Import Vault from JSON Backup">
+                    <i data-lucide="upload"></i>
+                </button>
+                <input type="file" id="import" hidden onchange="importJSON(event)">
+            </div>
+        </aside>
+
+        <main class="content">
+            <div class="header">
+                <div class="breadcrumb-container">
+                    <i data-lucide="layers" style="color: var(--pri); width: 32px; height: 32px;"></i>
+                    <div id="crumb" class="breadcrumb">My Vault</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" style="background: var(--pri-light); color: var(--pri)" onclick="createFolder()" title="Create a New Folder">
+                        <i data-lucide="folder-plus"></i>
+                    </button>
+                    <button class="btn primary" onclick="showModal()" title="Create a New Note">
+                        <i data-lucide="plus-circle"></i> New Note
+                    </button>
+                </div>
+            </div>
+            <div id="grid" class="grid"></div>
+        </main>
+    </div>
+
+    <div id="noteModal" class="modal">
+        <div class="modal-box">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:1rem">
+                <i data-lucide="layers" style="color:var(--pri)"></i>
+                <h2 style="margin:0">New Note</h2>
+            </div>
+            <input id="title" placeholder="Title">
+            <textarea id="body" placeholder="Write something..." style="height:140px"></textarea>
+            <input id="file" type="file" style="margin-top:15px">
+            <div style="display:flex; gap:10px; margin-top:2rem">
+                <button class="btn primary" style="flex:2" onclick="saveNote()" title="Save note to vault">Save Note</button>
+                <button class="btn" style="flex:1" onclick="hideModal()" title="Discard changes">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview" class="modal">
+        <div class="modal-box" style="max-width:800px">
+            <div id="previewContent"></div>
+            <button class="btn primary" style="margin-top:20px; width:100%" onclick="preview.style.display='none'">Close Vault Item</button>
+        </div>
+    </div>
+
+    
+
+    <script>
+        // Logic remains largely the same, just keeping it consistent with the UI
+        let db = JSON.parse(localStorage.getItem("Core-X")) || { notes: [] };
+        let dirHandle = null;
+        let currentFolderId = null;
+        let currentView = 'all';
+
+        const connectBtn = document.getElementById('connectBtn');
+        const dot = document.getElementById('dot');
+        const statusText = document.getElementById('status');
+
+        connectBtn.onclick = async () => {
+            try {
+                dirHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+                if (dirHandle) {
+                    dot.className = "dot on";
+                    statusText.innerText = "Vault: Connected";
+                    connectBtn.style.display = "none";
+                    await loadFromPC();
+                    render();
+                }
+            } catch (err) { console.warn("User cancelled directory picker"); }
+        };
+
+        function setView(view) {
+            currentView = view;
+            currentFolderId = null;
+            document.querySelectorAll('.nav li').forEach(li => li.classList.remove('active'));
+            if(view === 'all') document.getElementById('nav-all').classList.add('active');
+            if(view === 'fav') document.getElementById('nav-fav').classList.add('active');
+            if(view === 'arc') document.getElementById('nav-arc').classList.add('active');
+            render();
+        }
+
+        async function sync() {
+            localStorage.setItem("Core-X", JSON.stringify(db));
+            if (dirHandle) {
+                try {
+                    const fileH = await dirHandle.getFileHandle("vault_backup.json", { create: true });
+                    const writable = await fileH.createWritable();
+                    await writable.write(JSON.stringify(db));
+                    await writable.close();
+                } catch (e) { console.error("Auto-sync failed", e); }
+            }
+            render();
+        }
+
+        async function loadFromPC() {
+            try {
+                const fileH = await dirHandle.getFileHandle("vault_backup.json");
+                const file = await fileH.getFile();
+                db = JSON.parse(await file.text());
+            } catch (e) { console.log("No backup found"); }
+        }
+
+        function toggleMeta(id, key) {
+            const note = db.notes.find(n => n.id === id);
+            if (note) { note[key] = !note[key]; sync(); }
+        }
+
+        function createFolder() {
+            const name = prompt("Folder Name:");
+            if (!name) return;
+            db.notes.push({
+                id: "f" + Date.now(),
+                type: "folder",
+                name: name,
+                parentId: currentFolderId,
+                archived: false
+            });
+            sync();
+        }
+
+        async function saveNote() {
+            const t = document.getElementById('title').value;
+            const b = document.getElementById('body').value;
+            const f = document.getElementById('file').files[0];
+            if (!t) return alert("Title is required");
+            let fileName = null, fileType = null;
+            if (f && dirHandle) {
+                const h = await dirHandle.getFileHandle(f.name, { create: true });
+                const w = await h.createWritable();
+                await w.write(f); await w.close();
+                fileName = f.name; fileType = f.type;
+            }
+            db.notes.push({
+                id: "n" + Date.now(),
+                type: "note",
+                title: t,
+                body: b,
+                fileName,
+                fileType,
+                parentId: currentFolderId,
+                favorite: false,
+                archived: false
+            });
+            hideModal();
+            sync();
+        }
+
+        function render() {
+            const grid = document.getElementById('grid');
+            const crumb = document.getElementById('crumb');
+            let filtered = db.notes;
+
+            if (currentView === 'fav') {
+                filtered = filtered.filter(n => n.favorite && !n.archived);
+                crumb.innerText = "Favorites";
+            } else if (currentView === 'arc') {
+                filtered = filtered.filter(n => n.archived);
+                crumb.innerText = "Archive";
+            } else {
+                filtered = filtered.filter(n => n.parentId === currentFolderId && !n.archived);
+                const folder = db.notes.find(f => f.id === currentFolderId);
+                crumb.innerText = folder ? folder.name : "My Vault";
+            }
+
+            grid.innerHTML = filtered.map(n => {
+                const isFav = n.favorite ? 'active' : '';
+                if (n.type === 'folder') {
+                    return `
+                    <div class="card folder" onclick="nav('${n.id}')" title="Open folder: ${n.name}">
+                        <div style="display:flex; align-items:center; gap:8px">
+                            <i data-lucide="layers" style="width:16px; color:var(--warn)"></i>
+                            <b>${n.name}</b>
+                        </div>
+                        <div class="card-actions">
+                            <i data-lucide="archive" class="mini-btn" title="Archive Folder" onclick="event.stopPropagation();toggleMeta('${n.id}','archived')"></i>
+                            <i data-lucide="trash-2" class="mini-btn" title="Delete Permanently" onclick="event.stopPropagation();del('${n.id}')"></i>
+                        </div>
+                    </div>`;
+                }
+                return `
+                <div class="card note" onclick="openNote('${n.id}')" title="Read note: ${n.title}">
+                    <div class="card-actions">
+                        <i data-lucide="star" class="mini-btn ${isFav}" title="Toggle Favorite" onclick="event.stopPropagation();toggleMeta('${n.id}','favorite')"></i>
+                        <i data-lucide="archive" class="mini-btn" title="Archive Note" onclick="event.stopPropagation();toggleMeta('${n.id}','archived')"></i>
+                        <i data-lucide="trash-2" class="mini-btn" title="Delete Permanently" onclick="event.stopPropagation();del('${n.id}')"></i>
+                    </div>
+                    <h4>${n.title}</h4>
+                    <p style="font-size:0.85rem; color:var(--muted)">${n.body.slice(0, 60)}...</p>
+                </div>`;
+            }).join("");
+            lucide.createIcons();
+        }
+
+        async function openNote(id) {
+            const n = db.notes.find(x => x.id === id);
+            let attachment = "";
+            if (n.fileName && dirHandle) {
+                try {
+                    const h = await dirHandle.getFileHandle(n.fileName);
+                    const f = await h.getFile();
+                    const u = URL.createObjectURL(f);
+                    attachment = n.fileType.startsWith("image") ? 
+                        `<img src="${u}" style="width:100%; border-radius:15px; margin-top:15px">` : 
+                        `<iframe src="${u}" width="100%" height="400px" style="margin-top:15px"></iframe>`;
+                } catch { attachment = "<p style='color:red'>File not found in folder</p>"; }
+            }
+            document.getElementById('previewContent').innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px">
+                    <i data-lucide="layers" style="color:var(--pri)"></i>
+                    <h1 style="margin:0">${n.title}</h1>
+                </div>
+                <p style="white-space: pre-wrap;">${n.body}</p>
+                ${attachment}`;
+            document.getElementById('preview').style.display = "flex";
+            lucide.createIcons();
+        }
+
+        function nav(id) { currentFolderId = id; currentView = 'all'; render(); }
+        function del(id) { if (confirm("Delete this?")) { db.notes = db.notes.filter(n => n.id !== id); sync(); } }
+        function showModal() { document.getElementById('noteModal').style.display = 'flex'; }
+        function hideModal() { 
+            document.getElementById('noteModal').style.display = 'none'; 
+            document.getElementById('title').value = ''; 
+            document.getElementById('body').value = ''; 
+        }
+
+        themeToggle.onclick = () => {
+            const t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', t);
+            themeToggle.innerHTML = t === 'light' ? '<i data-lucide="moon"></i>' : '<i data-lucide="sun"></i>';
+            lucide.createIcons();
+        };
+
+        function exportJSON() {
+            const blob = new Blob([JSON.stringify(db)], { type: "application/json" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "corex_vault_backup.json";
+            a.click();
+        }
+
+        function importJSON(e) {
+            const reader = new FileReader();
+            reader.onload = () => { db = JSON.parse(reader.result); sync(); };
+            reader.readAsText(e.target.files[0]);
+        }
+
+        render();
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
+Core-X turns your PC folder into a secure, structured digital brain for notes, files, and ideas — without relying on servers, accounts, or the internet.
+
+Core-X is a local-first notes vault that stores everything directly in a user’s PC folder, giving full ownership, offline access, and structured knowledge management without cloud dependency.
